@@ -8,4 +8,6 @@ using namespace std;
 
 
 
-void 
+void inicioMenu() {
+
+}
