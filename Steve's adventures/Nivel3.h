@@ -1,0 +1,23 @@
+#pragma once
+#include "GestorNivel.h"
+#include "DisenoPersonajes.h"
+
+namespace Nivel3 {
+    
+    inline void fase3_1(GestorNivel& gestor) {
+    }
+
+    inline void fase3_2(GestorNivel& gestor) {
+    }
+
+    inline void iniciar() {
+        GestorNivel gestor(20, 20);
+        Jugador* ivor = new Jugador(0, 0, "Ivor");
+        TormentaWither* wither = new TormentaWither(10, 10, 100);
+        gestor.agregarEntidad(ivor);
+        gestor.agregarEntidad(wither);
+
+        fase3_1(gestor);
+        fase3_2(gestor);
+    }
+}
