@@ -48,10 +48,31 @@ public:
     }
 
     void dibujar() const override {
-        Entidad::dibujar();
+        UtilidadesConsola::establecerColor(ConsoleColor::Yellow);
+
+        UtilidadesConsola::posicionarCursor(posicionX + 1, posicionY);
+        Console::Write('O');
+
+        UtilidadesConsola::posicionarCursor(posicionX, posicionY + 1);
+        Console::Write("/|\\");
+
+        UtilidadesConsola::posicionarCursor(posicionX + 1, posicionY + 2);
+        Console::Write('|');
+
+        UtilidadesConsola::posicionarCursor(posicionX, posicionY + 3);
+        Console::Write("/ \\");
+
+        UtilidadesConsola::establecerColor(ConsoleColor::Gray);
     }
 
     void mover(int desplazamientoX, int desplazamientoY) {
+        posicionX = posicionX + desplazamientoX;
+        posicionY = posicionY + desplazamientoY;
+    }
+
+    void establecerPosicion(int nuevaX, int nuevaY) {
+        posicionX = nuevaX;
+        posicionY = nuevaY;
     }
 
     void interactuar(Entidad* objetivo) {
@@ -60,13 +81,64 @@ public:
     const char* obtenerNombre() const { return nombre; }
 };
 
+class Arbol : public Entidad {
+public:
+    Arbol(int posicionX, int posicionY) : Entidad(posicionX, posicionY, '|') {}
+
+    void actualizar() override {
+    }
+
+    void dibujar() const override {
+        UtilidadesConsola::establecerColor(ConsoleColor::Green);
+        UtilidadesConsola::posicionarCursor(posicionX - 1, posicionY - 1);
+        Console::Write("***");
+
+        UtilidadesConsola::establecerColor(ConsoleColor::DarkYellow);
+        UtilidadesConsola::posicionarCursor(posicionX, posicionY);
+        Console::Write("|");
+
+        UtilidadesConsola::establecerColor(ConsoleColor::Gray);
+    }
+};
+
+class Roca : public Entidad {
+public:
+    Roca(int posicionX, int posicionY) : Entidad(posicionX, posicionY, 'o') {}
+
+    void actualizar() override {
+    }
+
+    void dibujar() const override {
+        UtilidadesConsola::establecerColor(ConsoleColor::DarkGray);
+        Entidad::dibujar();
+        UtilidadesConsola::establecerColor(ConsoleColor::Gray);
+    }
+};
+
+class Lago : public Entidad {
+public:
+    Lago(int posicionX, int posicionY) : Entidad(posicionX, posicionY, '~') {}
+
+    void actualizar() override {
+    }
+
+    void dibujar() const override {
+        UtilidadesConsola::establecerColor(ConsoleColor::Blue);
+        Entidad::dibujar();
+        UtilidadesConsola::establecerColor(ConsoleColor::Gray);
+    }
+};
+
 class Trampa : public Entidad {
 private:
     bool activada;
     int dano;
+    float probabilidadActivacion;
 
 public:
-    Trampa(int posicionX, int posicionY, int dano) : Entidad(posicionX, posicionY, 'X'), activada(false), dano(dano) {}
+    Trampa(int posicionX, int posicionY, int dano, float probabilidadActivacion)
+        : Entidad(posicionX, posicionY, 'X'), activada(false), dano(dano), probabilidadActivacion(probabilidadActivacion) {
+    }
 
     void actualizar() override {
     }
@@ -89,7 +161,8 @@ private:
 
 public:
     TormentaWither(int posicionX, int posicionY, int salud)
-        : Entidad(posicionX, posicionY, 'W'), salud(salud), poderDestruccion(10) {}
+        : Entidad(posicionX, posicionY, 'W'), salud(salud), poderDestruccion(10) {
+    }
 
     void actualizar() override {
     }

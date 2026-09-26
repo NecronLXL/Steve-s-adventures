@@ -3,14 +3,14 @@
 #include "DisenoPersonajes.h"
 
 namespace Nivel3 {
-    
-    inline void fase3_1(GestorNivel& gestor) {
+
+    void fase3_1(GestorNivel& gestor) {
     }
 
-    inline void fase3_2(GestorNivel& gestor) {
+    void fase3_2(GestorNivel& gestor) {
     }
 
-    inline void iniciar() {
+    void iniciar() {
         GestorNivel gestor(20, 20);
         Jugador* ivor = new Jugador(0, 0, "Ivor");
         TormentaWither* wither = new TormentaWither(10, 10, 100);

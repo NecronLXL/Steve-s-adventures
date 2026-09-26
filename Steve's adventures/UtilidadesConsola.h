@@ -4,31 +4,31 @@ using namespace System::Threading;
 
 namespace UtilidadesConsola {
 
-    inline void posicionarCursor(int columna, int fila) {
+    void posicionarCursor(int columna, int fila) {
         Console::SetCursorPosition(columna, fila);
     }
 
-    inline void ocultarCursor() {
+    void ocultarCursor() {
         Console::CursorVisible = false;
     }
 
-    inline void limpiarPantalla() {
+    void limpiarPantalla() {
         Console::Clear();
     }
 
-    inline void establecerColor(ConsoleColor color) {
+    void establecerColor(ConsoleColor color) {
         Console::ForegroundColor = color;
     }
 
-    inline void esperar(int milisegundos) {
+    void esperar(int milisegundos) {
         Thread::Sleep(milisegundos);
     }
 
-    inline bool teclaPresionada() {
+    bool teclaPresionada() {
         return Console::KeyAvailable;
     }
 
-    inline ConsoleKey obtenerTecla() {
+    ConsoleKey obtenerTecla() {
         return Console::ReadKey(true).Key;
     }
 }

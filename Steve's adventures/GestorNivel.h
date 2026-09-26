@@ -4,7 +4,7 @@
 
 class GestorNivel {
 private:
-    static const int MAXIMO_ENTIDADES = 50;
+    const int MAXIMO_ENTIDADES = 50;
 
     Entidad** entidades;
     int filas;
@@ -13,7 +13,7 @@ private:
 
 public:
     GestorNivel(int filas, int columnas) : filas(filas), columnas(columnas), cantidadEntidades(0) {
-        entidades = new Entidad*[MAXIMO_ENTIDADES];
+        entidades = new Entidad * [MAXIMO_ENTIDADES];
     }
 
     ~GestorNivel() {

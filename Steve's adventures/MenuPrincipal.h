@@ -2,22 +2,16 @@
 #include "UtilidadesConsola.h"
 using namespace System;
 
-enum class OpcionMenu {
-    INICIO,
-    TUTORIAL,
-    NIVELES,
-    CREDITOS
-};
-
 namespace DetalleMenu {
     const char* const TITULO = "JESSE'S ADVENTURES";
     const char* const OPCIONES[4] = { "INICIO", "TUTORIAL", "NIVELES", "CREDITOS" };
     const int POSICION_Y_OPCIONES[4] = { 10, 12, 14, 16 };
     const int CENTRO_X = 30;
 
-    inline void deslizarTexto(const char* texto, int columnaInicial, int filaInicial, int columnaFinal, int filaFinal, int pasos) {
+    void deslizarTexto(const char* texto, int columnaInicial, int filaInicial, int columnaFinal, int filaFinal, int pasos) {
         String^ textoManejado = gcnew String(texto);
-        int columnaAnterior = columnaInicial, filaAnterior = filaInicial;
+        int columnaAnterior = columnaInicial;
+        int filaAnterior = filaInicial;
 
         for (int i = 0; i <= pasos; i++) {
             int columna = columnaInicial + (columnaFinal - columnaInicial) * i / pasos;
@@ -29,7 +23,8 @@ namespace DetalleMenu {
             UtilidadesConsola::posicionarCursor(columna, fila);
             Console::Write(textoManejado);
 
-            columnaAnterior = columna; filaAnterior = fila;
+            columnaAnterior = columna;
+            filaAnterior = fila;
             UtilidadesConsola::esperar(15);
         }
     }
@@ -37,7 +32,7 @@ namespace DetalleMenu {
 
 class MenuPrincipal {
 private:
-    static const int TOTAL_OPCIONES = 4;
+    const int TOTAL_OPCIONES = 4;
     int seleccionActual;
 
     void animarTitulo() const {
@@ -64,7 +59,9 @@ private:
     }
 
 public:
-    MenuPrincipal() : seleccionActual(0) {}
+    MenuPrincipal() {
+        seleccionActual = 0;
+    }
 
     void mostrarEntrada() const {
         UtilidadesConsola::limpiarPantalla();
@@ -73,7 +70,7 @@ public:
         animarOpciones();
     }
 
-    OpcionMenu ejecutar() {
+    int ejecutar() {
         mostrarEntrada();
 
         bool elegido = false;
@@ -81,11 +78,20 @@ public:
             dibujarOpciones();
             ConsoleKey tecla = UtilidadesConsola::obtenerTecla();
 
-            if (tecla == ConsoleKey::UpArrow) seleccionActual = (seleccionActual - 1 + TOTAL_OPCIONES) % TOTAL_OPCIONES;
-            else if (tecla == ConsoleKey::DownArrow) seleccionActual = (seleccionActual + 1) % TOTAL_OPCIONES;
-            else if (tecla == ConsoleKey::Enter) elegido = true;
+            if (tecla == ConsoleKey::UpArrow) {
+                seleccionActual = seleccionActual - 1;
+                if (seleccionActual < 0) seleccionActual = TOTAL_OPCIONES - 1;
+            }
+            else if (tecla == ConsoleKey::DownArrow) {
+                seleccionActual = seleccionActual + 1;
+                if (seleccionActual >= TOTAL_OPCIONES) seleccionActual = 0;
+            }
+            else if (tecla == ConsoleKey::Enter) {
+                elegido = true;
+            }
         }
 
-        return static_cast<OpcionMenu>(seleccionActual);
+        return seleccionActual;
     }
 };
+
