@@ -95,7 +95,7 @@ namespace Nivel1 {
 
     void iniciar() {
         GestorNivel gestor(20, 20);
-        Jugador* jesse = new Jugador(34, 9, "Jessee");
+        Jugador* jesse = new Jugador(34, 9, "Jesse");
 
         fase1_1(gestor, jesse);
         fase1_2(gestor, jesse);
