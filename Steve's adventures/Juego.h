@@ -97,9 +97,9 @@ private:
         }
     }
 
-    void dibujarPanelGUI(int x, int y, int ancho, int alto) const {
+    void dibujarPanelGUI(int x, int y, int ancho, int alto) const { 
         for (int j = y; j < y + alto; j++) {
-            for (int i = x; i < x + ancho; i += 2) {
+            for (int i = x; i < x + ancho; i = i + 2) {
                 if (j == y || j == y + alto - 1 || i == x || i == x + ancho - 2) {
                     pintarBloque(i, j, ConsoleColor::DarkGray);
                 }

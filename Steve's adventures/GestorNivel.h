@@ -31,7 +31,7 @@ public:
         for (int i = 0; i < cantidadEntidades; i++) {
             if (entidades[i] == entidad) {
                 delete entidades[i];
-                for (int j = i; j < cantidadEntidades - 1; j++) {
+                for (int j = i; j < cantidadEntidades - 1; j += 1) {
                     entidades[j] = entidades[j + 1];
                 }
                 cantidadEntidades--;

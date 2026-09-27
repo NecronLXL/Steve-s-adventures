@@ -14,6 +14,7 @@ namespace UtilidadesConsola {
 
     void limpiarPantalla() {
         Console::Clear();
+
     }
 
     void establecerColor(ConsoleColor color) {

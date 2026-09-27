@@ -12,7 +12,7 @@ namespace Nivel2 {
 
     void iniciar() {
         GestorNivel gestor(20, 20);
-        Jugador* lukas = new Jugador(0, 0, "Lukas");
+        Jugador* lukas = new Jugador(0, 0, "Lukass");
         gestor.agregarEntidad(lukas);
 
         fase2_1(gestor);

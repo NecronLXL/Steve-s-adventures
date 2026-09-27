@@ -23,7 +23,7 @@ private:
     }
 
     void dibujarArbol(int baseX, int baseY) const {
-        for (int y = baseY - 4; y <= baseY - 1; y++) {
+        for (int y = baseY - 4; y <= baseY - 1; y += 1) {
             for (int x = baseX - 6; x <= baseX + 6; x += 2) {
                 if ((y == baseY - 4 || y == baseY - 1) && (x == baseX - 6 || x == baseX + 6)) continue;
                 ConsoleColor colorHoja = ((x + y) % 4 == 0) ? ConsoleColor::Green : ConsoleColor::DarkGreen;

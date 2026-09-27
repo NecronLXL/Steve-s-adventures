@@ -12,7 +12,7 @@ namespace Nivel3 {
 
     void iniciar() {
         GestorNivel gestor(20, 20);
-        Jugador* ivor = new Jugador(0, 0, "Ivor");
+        Jugador* ivor = new Jugador(0, 0, "Ivorr");
         TormentaWither* wither = new TormentaWither(10, 10, 100);
         gestor.agregarEntidad(ivor);
         gestor.agregarEntidad(wither);

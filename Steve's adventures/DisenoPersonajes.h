@@ -57,7 +57,7 @@ public:
         Console::Write("/|\\");
 
         UtilidadesConsola::posicionarCursor(posicionX + 1, posicionY + 2);
-        Console::Write('|');
+        Console::Write('||');
 
         UtilidadesConsola::posicionarCursor(posicionX, posicionY + 3);
         Console::Write("/ \\");
