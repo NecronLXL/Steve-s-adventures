@@ -43,7 +43,7 @@ public:
     ~Jugador() {
         delete[] nombre;
     }
-
+     
     void actualizar() override {
     }
 

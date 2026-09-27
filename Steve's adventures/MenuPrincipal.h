@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "UtilidadesConsola.h"
-#include <conio.h> 
+#include <conio.h>  
 
 using namespace System;
 using namespace System::Threading;

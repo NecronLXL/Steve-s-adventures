@@ -2,7 +2,7 @@
 #include "DisenoPersonajes.h"
 #include "UtilidadesConsola.h"
 
-class GestorNivel {
+class GestorNivel { 
 private:
     const int MAXIMO_ENTIDADES = 50;
 

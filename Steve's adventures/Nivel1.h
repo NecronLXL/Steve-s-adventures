@@ -1,6 +1,6 @@
 #pragma once
 #include "GestorNivel.h"
-#include "DisenoPersonajes.h"
+#include "DisenoPersonajes.h" 
 using namespace System;
 
 namespace Nivel1 {
