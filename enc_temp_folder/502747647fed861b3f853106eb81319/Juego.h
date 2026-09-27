@@ -336,7 +336,7 @@ private:
             Console::ForegroundColor = ConsoleColor::White;
             if (!mochilaAgarrada) {
                 if (Math::Abs(jesseX - mochilaX) <= 3 && Math::Abs(jesseY - mochilaY) <= 1) {
-                    Console::Write(" Estas sobre la Mochila! Presiona [ E ] para recogerla y equiparla ");
+                    Console::Write(" Estas sobre la Mochila! Presiona [ E ] para recogerla y equiparla");
                 }
                 else {
                     Console::Write(" Paso 1: Camina hacia la izquierda y busca la Mochila [M] en el suelo ");
