@@ -14,6 +14,12 @@ private:
     const int ANCHO_PANTALLA = 120;
     const int ALTO_PANTALLA = 32;
 
+    static const int PANEL_MOCHILA_X = 84;
+    static const int PANEL_MOCHILA_Y = 2;
+    static const int PANEL_MOCHILA_ANCHO = 34;
+    static const int PANEL_MOCHILA_ALTO = 19;
+    static const int CAPACIDAD_MOCHILA = 8;
+
     static void pintarBloque(int col, int fila, ConsoleColor colorFondo, ConsoleColor colorTexto = ConsoleColor::White, String^ texto = "  ") {
         if (col >= 0 && col < 120 && fila >= 0 && fila < 32) {
             UtilidadesConsola::posicionarCursor(col, fila);
@@ -21,6 +27,22 @@ private:
             Console::ForegroundColor = colorTexto;
             Console::Write(texto);
         }
+    }
+
+    ConsoleColor colorTerrenoBase(int x, int y) const {
+        bool enCaminoVertical = (x >= 28 && x <= 36);
+        bool enCaminoHorizontal = (x >= 36 && x <= 64 && y >= 18 && y <= 22);
+        if (enCaminoVertical || enCaminoHorizontal) {
+            return ((x + y) % 6 == 0) ? ConsoleColor::Gray : ConsoleColor::DarkGray;
+        }
+        return ((x + y) % 5 == 0) ? ConsoleColor::DarkGreen : ConsoleColor::Green;
+    }
+
+    bool esPosicionSolida(int x, int y) const {
+        bool paredCabana = (x >= 16 && x <= 46 && y >= 10 && y <= 11);
+        bool cercaCorral = (x >= 4 && x <= 16 && y >= 9 && y <= 15);
+        bool estructuraPozo = (x >= 14 && x <= 18 && y >= 18 && y <= 20);
+        return paredCabana || cercaCorral || estructuraPozo;
     }
 
     void dibujarFondoEstatico() const {
@@ -88,21 +110,24 @@ private:
         }
     }
 
-    void dibujarMochilaInventario(bool abierta, bool tieneMochilaItem, bool tieneDiamante) const {
+    void dibujarMochilaInventario(bool abierta, bool tieneMochilaItem, array<String^>^ objetos, array<ConsoleColor>^ coloresObjetos) const {
+        int mx = PANEL_MOCHILA_X;
+        int my = PANEL_MOCHILA_Y;
+        int anchoPanel = PANEL_MOCHILA_ANCHO;
+        int altoPanel = PANEL_MOCHILA_ALTO;
+
         if (!abierta) {
-            for (int y = 2; y <= 10; y++) {
-                for (int x = 88; x <= 118; x += 2) {
+            for (int y = my; y < my + altoPanel; y++) {
+                for (int x = mx; x < mx + anchoPanel; x += 2) {
                     pintarBloque(x, y, ConsoleColor::Cyan);
                 }
             }
             return;
         }
 
-        int mx = 88;
-        int my = 2;
-        for (int y = my; y < my + 9; y++) {
-            for (int x = mx; x < mx + 30; x += 2) {
-                if (y == my || y == my + 8 || x == mx || x == mx + 28) {
+        for (int y = my; y < my + altoPanel; y++) {
+            for (int x = mx; x < mx + anchoPanel; x += 2) {
+                if (y == my || y == my + altoPanel - 1 || x == mx || x == mx + anchoPanel - 2) {
                     pintarBloque(x, y, ConsoleColor::DarkGray);
                 }
                 else {
@@ -111,49 +136,82 @@ private:
             }
         }
 
-        UtilidadesConsola::posicionarCursor(mx + 3, my + 1);
         Console::BackgroundColor = ConsoleColor::Black;
+
+        UtilidadesConsola::posicionarCursor(mx + 3, my + 1);
         Console::ForegroundColor = ConsoleColor::Yellow;
         Console::Write("=== MOCHILA DE JESSE ===");
 
         UtilidadesConsola::posicionarCursor(mx + 3, my + 3);
         if (tieneMochilaItem) {
             Console::ForegroundColor = ConsoleColor::Green;
-            Console::Write(" [M] Mochila Equipada   ");
+            Console::Write("Estado: Equipada         ");
         }
         else {
             Console::ForegroundColor = ConsoleColor::DarkGray;
-            Console::Write(" [ ] Mochila (Falta)    ");
+            Console::Write("Estado: Sin conseguir    ");
+        }
+
+        int capacidad = objetos->Length;
+        int ocupados = 0;
+        for (int i = 0; i < capacidad; i++) {
+            if (objetos[i] != nullptr) ocupados++;
         }
 
         UtilidadesConsola::posicionarCursor(mx + 3, my + 5);
-        if (tieneDiamante) {
-            Console::ForegroundColor = ConsoleColor::Cyan;
-            Console::Write(" [<> Diamante Guardado] ");
+        Console::ForegroundColor = ConsoleColor::White;
+        Console::Write(String::Format("Inventario ({0}/{1} objetos):", ocupados, capacidad));
+
+        for (int i = 0; i < capacidad; i++) {
+            UtilidadesConsola::posicionarCursor(mx + 3, my + 7 + i);
+            if (objetos[i] != nullptr) {
+                Console::ForegroundColor = coloresObjetos[i];
+                Console::Write(String::Format(" [{0}] {1}", i + 1, objetos[i]->PadRight(20)));
+            }
+            else {
+                Console::ForegroundColor = ConsoleColor::DarkGray;
+                Console::Write(String::Format(" [{0}] -- vacio --         ", i + 1));
+            }
         }
-        else {
-            Console::ForegroundColor = ConsoleColor::DarkGray;
-            Console::Write(" [   ] Slot Vacio     ");
+
+        UtilidadesConsola::posicionarCursor(mx + 3, my + altoPanel - 2);
+        Console::ForegroundColor = ConsoleColor::Gray;
+        Console::Write("[C] Cerrar mochila");
+    }
+
+    void animarRecoleccion(int x, int y, String^ nombreObjeto, ConsoleColor colorTexto) const {
+        int tx = x - 4;
+        int ty = y - 2;
+        String^ mensaje = String::Concat("+1 ", nombreObjeto);
+        ConsoleColor fondoTexto = colorTerrenoBase(x, y);
+
+        for (int i = 0; i < 4; i++) {
+            pintarBloque(x - 2, y - 1, ConsoleColor::Yellow, ConsoleColor::DarkYellow, "* ");
+            pintarBloque(x + 4, y - 1, ConsoleColor::Yellow, ConsoleColor::DarkYellow, " *");
+            pintarBloque(x + 1, y + 2, ConsoleColor::Cyan, ConsoleColor::Blue, "* ");
+            pintarBloque(x - 3, y + 1, ConsoleColor::White, ConsoleColor::Gray, ". ");
+
+            UtilidadesConsola::posicionarCursor(tx, ty);
+            Console::BackgroundColor = ConsoleColor::Black;
+            Console::ForegroundColor = colorTexto;
+            Console::Write(mensaje);
+
+            Thread::Sleep(90);
+
+            pintarBloque(x - 2, y - 1, colorTerrenoBase(x - 2, y - 1));
+            pintarBloque(x + 4, y - 1, colorTerrenoBase(x + 4, y - 1));
+            pintarBloque(x + 1, y + 2, colorTerrenoBase(x + 1, y + 2));
+            pintarBloque(x - 3, y + 1, colorTerrenoBase(x - 3, y + 1));
+
+            UtilidadesConsola::posicionarCursor(tx, ty);
+            Console::BackgroundColor = fondoTexto;
+            Console::ForegroundColor = fondoTexto;
+            Console::Write(gcnew String(' ', mensaje->Length));
+
+            Thread::Sleep(60);
         }
     }
 
-    // Animación corta de partículas cerca del jugador al recoger un objeto
-    void animarRecoleccion(int x, int y) const {
-        for (int i = 0; i < 3; i++) {
-            pintarBloque(x - 2, y - 1, ConsoleColor::Yellow, ConsoleColor::DarkYellow, " *");
-            pintarBloque(x + 4, y - 1, ConsoleColor::Yellow, ConsoleColor::DarkYellow, ". ");
-            pintarBloque(x + 2, y + 2, ConsoleColor::Cyan, ConsoleColor::Blue, "* ");
-            Thread::Sleep(70);
-            pintarBloque(x - 2, y - 1, ConsoleColor::Green, ConsoleColor::Green, "  ");
-            pintarBloque(x + 4, y - 1, ConsoleColor::Green, ConsoleColor::Green, "  ");
-            pintarBloque(x + 2, y + 2, ConsoleColor::Green, ConsoleColor::Green, "  ");
-            Thread::Sleep(70);
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // TUTORIAL DETALLADO, COMPLEJO Y CON RECOLECCIÓN DE MOCHILA
-    // ------------------------------------------------------------------------
     void mostrarTutorial() const {
         Console::SetWindowSize(ANCHO_PANTALLA, ALTO_PANTALLA);
         Console::SetBufferSize(ANCHO_PANTALLA, ALTO_PANTALLA);
@@ -161,7 +219,6 @@ private:
         UtilidadesConsola::limpiarPantalla();
         UtilidadesConsola::ocultarCursor();
 
-        // 1. Cielo superior detallado
         for (int y = 0; y <= 7; y++) {
             for (int x = 0; x < ANCHO_PANTALLA; x += 2) pintarBloque(x, y, ConsoleColor::Cyan);
         }
@@ -169,7 +226,6 @@ private:
             for (int x = 6; x <= 14; x += 2) pintarBloque(x, y, ConsoleColor::Yellow);
         }
 
-        // 2. Pradera verde inferior
         for (int y = 8; y < ALTO_PANTALLA; y++) {
             for (int x = 0; x < ANCHO_PANTALLA; x += 2) {
                 if ((x + y) % 5 == 0) pintarBloque(x, y, ConsoleColor::DarkGreen);
@@ -177,49 +233,69 @@ private:
             }
         }
 
-        // 3. Cabaña de madera detallada (Techo, paredes, puerta y ventanas)
         for (int y = 3; y <= 5; y++) {
-            for (int x = 14; x <= 48; x += 2) pintarBloque(x, y, ConsoleColor::Yellow); // Techo de paja
+            for (int x = 14; x <= 48; x += 2) pintarBloque(x, y, ConsoleColor::Yellow);
         }
         for (int y = 6; y <= 11; y++) {
-            for (int x = 16; x <= 46; x += 2) pintarBloque(x, y, ConsoleColor::DarkYellow); // Paredes
+            for (int x = 16; x <= 46; x += 2) pintarBloque(x, y, ConsoleColor::DarkYellow);
         }
-        // Ventanas y puerta de la cabaña
         pintarBloque(22, 8, ConsoleColor::Cyan, ConsoleColor::Blue, "[]");
         pintarBloque(38, 8, ConsoleColor::Cyan, ConsoleColor::Blue, "[]");
         pintarBloque(30, 9, ConsoleColor::DarkRed, ConsoleColor::Black, "||");
+        pintarBloque(40, 2, ConsoleColor::DarkGray, ConsoleColor::Gray, "[]");
+        pintarBloque(40, 1, ConsoleColor::Cyan, ConsoleColor::White, ". ");
+        pintarBloque(42, 0, ConsoleColor::Cyan, ConsoleColor::White, ". ");
+        pintarBloque(26, 11, ConsoleColor::DarkYellow, ConsoleColor::Red, "o ");
+        pintarBloque(34, 11, ConsoleColor::DarkYellow, ConsoleColor::Red, "o ");
 
-        // 4. Corral de vallas con heno a la izquierda
         for (int x = 4; x <= 16; x += 2) {
             pintarBloque(x, 9, ConsoleColor::DarkGray);
             pintarBloque(x, 15, ConsoleColor::DarkGray);
         }
         for (int y = 9; y <= 15; y++) {
             pintarBloque(4, y, ConsoleColor::DarkGray);
+            pintarBloque(16, y, ConsoleColor::DarkGray);
         }
-        // Montón de heno en el corral
         pintarBloque(8, 12, ConsoleColor::Yellow, ConsoleColor::DarkYellow, "/\\");
         pintarBloque(8, 13, ConsoleColor::Yellow, ConsoleColor::DarkYellow, "MM");
+        pintarBloque(12, 13, ConsoleColor::Gray, ConsoleColor::White, "oo");
 
-        // 5. Pozo de agua decorativo
+        pintarBloque(14, 18, ConsoleColor::DarkGray, ConsoleColor::DarkGray, "  ");
+        pintarBloque(16, 18, ConsoleColor::DarkGray, ConsoleColor::DarkGray, "  ");
+        pintarBloque(18, 18, ConsoleColor::DarkGray, ConsoleColor::DarkGray, "  ");
+        pintarBloque(14, 19, ConsoleColor::DarkGray, ConsoleColor::DarkGray, "  ");
+        pintarBloque(18, 19, ConsoleColor::DarkGray, ConsoleColor::DarkGray, "  ");
+        pintarBloque(14, 20, ConsoleColor::Gray, ConsoleColor::Gray, "  ");
         pintarBloque(16, 20, ConsoleColor::DarkGray, ConsoleColor::Blue, "OO");
+        pintarBloque(18, 20, ConsoleColor::Gray, ConsoleColor::Gray, "  ");
 
-        // 6. Camino de tierra complejo que serpentea por el mapa
         for (int y = 12; y < ALTO_PANTALLA; y++) {
-            for (int x = 28; x <= 36; x += 2) pintarBloque(x, y, ConsoleColor::DarkGray);
+            for (int x = 28; x <= 36; x += 2) pintarBloque(x, y, colorTerrenoBase(x, y));
         }
         for (int x = 36; x <= 64; x += 2) {
-            for (int y = 18; y <= 22; y++) pintarBloque(x, y, ConsoleColor::DarkGray);
+            for (int y = 18; y <= 22; y++) pintarBloque(x, y, colorTerrenoBase(x, y));
         }
 
-        // 7. Bosque y árboles complejos a la derecha y abajo
-        for (int arbolY = 8; arbolY < 28; arbolY += 4) {
-            for (int arbolX = 75; arbolX < 118; arbolX += 6) {
-                pintarBloque(arbolX, arbolY, ConsoleColor::DarkGreen);
-                pintarBloque(arbolX + 2, arbolY, ConsoleColor::Green);
-                pintarBloque(arbolX + 1, arbolY + 1, ConsoleColor::DarkRed);
+        Random^ rngBosque = gcnew Random(7);
+        for (int arbolY = 8; arbolY < ALTO_PANTALLA - 2; arbolY += 4) {
+            for (int arbolX = 76; arbolX < ANCHO_PANTALLA - 2; arbolX += 6) {
+                if (arbolX >= PANEL_MOCHILA_X && arbolY <= PANEL_MOCHILA_Y + PANEL_MOCHILA_ALTO) continue;
+
+                int bx = arbolX + (rngBosque->Next(0, 2) * 2);
+                int by = arbolY + rngBosque->Next(0, 2);
+
+                pintarBloque(bx, by, ConsoleColor::DarkGreen, ConsoleColor::DarkGreen, "  ");
+                pintarBloque(bx + 2, by, ConsoleColor::Green, ConsoleColor::Green, "  ");
+                pintarBloque(bx, by + 1, ConsoleColor::Green, ConsoleColor::Green, "  ");
+                pintarBloque(bx + 2, by + 1, ConsoleColor::DarkGreen, ConsoleColor::DarkGreen, "  ");
+                pintarBloque(bx + 1, by + 2, ConsoleColor::DarkRed, ConsoleColor::DarkRed, "  ");
             }
         }
+
+        pintarBloque(58, 12, ConsoleColor::Green, ConsoleColor::Magenta, "* ");
+        pintarBloque(50, 26, ConsoleColor::Green, ConsoleColor::Red, "* ");
+        pintarBloque(20, 22, ConsoleColor::Green, ConsoleColor::Yellow, "* ");
+        pintarBloque(70, 14, ConsoleColor::DarkGreen, ConsoleColor::Green, "()");
 
         int jesseX = 30;
         int jesseY = 24;
@@ -233,37 +309,34 @@ private:
         bool mochilaAbierta = false;
         bool salir = false;
 
+        array<String^>^ inventario = gcnew array<String^>(CAPACIDAD_MOCHILA);
+        array<ConsoleColor>^ coloresInventario = gcnew array<ConsoleColor>(CAPACIDAD_MOCHILA);
+
         while (!salir) {
-            // Dibujar la Mochila en el suelo si no ha sido recogida
             if (!mochilaAgarrada) {
                 pintarBloque(mochilaX, mochilaY, ConsoleColor::DarkYellow, ConsoleColor::White, "[M]");
             }
 
-            // Dibujar el Diamante si la mochila ya fue agarrada y el diamante no
             if (mochilaAgarrada && !diamanteAgarrado) {
                 pintarBloque(diamanteX, diamanteY, ConsoleColor::Cyan, ConsoleColor::Blue, "<>");
             }
 
-            // Dibujar a Jesse
             pintarBloque(jesseX, jesseY, ConsoleColor::Yellow, ConsoleColor::Black, "JJ");
             pintarBloque(jesseX, jesseY + 1, ConsoleColor::Blue, ConsoleColor::Black, "HH");
 
-            // Actualizar panel de mochila
-            dibujarMochilaInventario(mochilaAbierta, mochilaAgarrada, diamanteAgarrado);
+            dibujarMochilaInventario(mochilaAbierta, mochilaAgarrada, inventario, coloresInventario);
 
-            // Instrucciones superiores
             UtilidadesConsola::posicionarCursor(12, 1);
             Console::BackgroundColor = ConsoleColor::Black;
             Console::ForegroundColor = ConsoleColor::Yellow;
             Console::Write(" [W][A][S][D]: Mover | [E]: Agarrar Objeto | [C]: Ver Mochila | [ESC]: Salir ");
 
-            // Mensajes guía inferiores dinámicos
             UtilidadesConsola::posicionarCursor(18, 29);
             Console::BackgroundColor = ConsoleColor::DarkGreen;
             Console::ForegroundColor = ConsoleColor::White;
             if (!mochilaAgarrada) {
                 if (Math::Abs(jesseX - mochilaX) <= 3 && Math::Abs(jesseY - mochilaY) <= 1) {
-                    Console::Write(" ¡Estas sobre la Mochila! Presiona [ E ] para recogerla y equiparla ");
+                    Console::Write(" Estas sobre la Mochila! Presiona [ E ] para recogerla y equiparla ");
                 }
                 else {
                     Console::Write(" Paso 1: Camina hacia la izquierda y busca la Mochila [M] en el suelo ");
@@ -271,65 +344,65 @@ private:
             }
             else if (!diamanteAgarrado) {
                 if (Math::Abs(jesseX - diamanteX) <= 3 && Math::Abs(jesseY - diamanteY) <= 1) {
-                    Console::Write(" ¡Genial! Presiona [ E ] para recoger el Diamante y guardarlo ");
+                    Console::Write(" Genial! Presiona [ E ] para recoger el Diamante y guardarlo ");
                 }
                 else {
                     Console::Write(" Paso 2: Sigue el camino hacia la derecha y encuentra el Diamante (<>) ");
                 }
             }
             else {
-                Console::Write(" ¡TUTORIAL COMPLETADO! Presiona [C] para revisar tu mochila o [ESC] para salir ");
+                Console::Write(" TUTORIAL COMPLETADO! Presiona [C] para revisar tu mochila o [ESC] para salir ");
             }
 
-            // Controles
             if (_kbhit()) {
                 int tecla = _getch();
                 if (tecla == 224 || tecla == 0) tecla = _getch();
 
                 int prevX = jesseX;
                 int prevY = jesseY;
+                int nuevoX = jesseX;
+                int nuevoY = jesseY;
 
                 if (tecla == 'w' || tecla == 'W' || tecla == 72) {
-                    if (jesseY > 10) jesseY--;
+                    if (jesseY > 10) nuevoY = jesseY - 1;
                 }
                 else if (tecla == 's' || tecla == 'S' || tecla == 80) {
-                    if (jesseY < 26) jesseY++;
+                    if (jesseY < 26) nuevoY = jesseY + 1;
                 }
                 else if (tecla == 'a' || tecla == 'A' || tecla == 75) {
-                    if (jesseX > 6) jesseX -= 2;
+                    if (jesseX > 6) nuevoX = jesseX - 2;
                 }
                 else if (tecla == 'd' || tecla == 'D' || tecla == 77) {
-                    if (jesseX < 75) jesseX += 2;
+                    if (jesseX < 75) nuevoX = jesseX + 2;
                 }
                 else if (tecla == 'e' || tecla == 'E') {
                     if (!mochilaAgarrada && Math::Abs(jesseX - mochilaX) <= 3 && Math::Abs(jesseY - mochilaY) <= 1) {
-                        animarRecoleccion(jesseX, jesseY);
+                        animarRecoleccion(jesseX, jesseY, "Mochila", ConsoleColor::Yellow);
                         mochilaAgarrada = true;
                     }
                     else if (mochilaAgarrada && !diamanteAgarrado && Math::Abs(jesseX - diamanteX) <= 3 && Math::Abs(jesseY - diamanteY) <= 1) {
-                        animarRecoleccion(jesseX, jesseY);
+                        animarRecoleccion(jesseX, jesseY, "Diamante", ConsoleColor::Cyan);
                         diamanteAgarrado = true;
-                        mochilaAbierta = true; // Abre automáticamente la mochila para mostrar que se guardó
+                        inventario[0] = "Diamante";
+                        coloresInventario[0] = ConsoleColor::Cyan;
+                        mochilaAbierta = true;
                     }
                 }
                 else if (tecla == 'c' || tecla == 'C') {
                     mochilaAbierta = !mochilaAbierta;
                 }
-                else if (tecla == 27) { // ESC
+                else if (tecla == 27) {
                     salir = true;
                 }
 
-                // Borrar rastro anterior de Jesse
-                for (int cy = prevY; cy <= prevY + 1; cy++) {
-                    for (int cx = prevX; cx <= prevX + 2; cx += 2) {
-                        if ((cx >= 28 && cx <= 36) || (cx >= 36 && cx <= 64 && cy >= 18 && cy <= 22)) {
-                            pintarBloque(cx, cy, ConsoleColor::DarkGray); // Camino
-                        }
-                        else {
-                            if ((cx + cy) % 5 == 0) pintarBloque(cx, cy, ConsoleColor::DarkGreen);
-                            else pintarBloque(cx, cy, ConsoleColor::Green); // Pradera
-                        }
-                    }
+                if (!esPosicionSolida(nuevoX, nuevoY) && !esPosicionSolida(nuevoX, nuevoY + 1)) {
+                    jesseX = nuevoX;
+                    jesseY = nuevoY;
+                }
+
+                if (jesseX != prevX || jesseY != prevY) {
+                    pintarBloque(prevX, prevY, colorTerrenoBase(prevX, prevY));
+                    pintarBloque(prevX, prevY + 1, colorTerrenoBase(prevX, prevY + 1));
                 }
             }
 
@@ -337,9 +410,6 @@ private:
         }
     }
 
-    // ------------------------------------------------------------------------
-    // SELECCIÓN DE NIVELES
-    // ------------------------------------------------------------------------
     void mostrarSeleccionNiveles() const {
         Console::SetWindowSize(ANCHO_PANTALLA, ALTO_PANTALLA);
         Console::SetBufferSize(ANCHO_PANTALLA, ALTO_PANTALLA);
@@ -420,9 +490,6 @@ private:
         }
     }
 
-    // ------------------------------------------------------------------------
-    // CRÉDITOS
-    // ------------------------------------------------------------------------
     void mostrarCreditos() const {
         Console::SetWindowSize(ANCHO_PANTALLA, ALTO_PANTALLA);
         Console::SetBufferSize(ANCHO_PANTALLA, ALTO_PANTALLA);
