@@ -1,6 +1,6 @@
 #pragma once
 using namespace System;
-using namespace System::Threading;
+using namespace System::Threading; 
 
 namespace UtilidadesConsola {
 
@@ -14,6 +14,7 @@ namespace UtilidadesConsola {
 
     void limpiarPantalla() {
         Console::Clear();
+
     }
 
     void establecerColor(ConsoleColor color) {

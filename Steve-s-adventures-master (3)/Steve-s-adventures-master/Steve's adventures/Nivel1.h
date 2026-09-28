@@ -1,6 +1,6 @@
 #pragma once
 #include "GestorNivel.h"
-#include "DisenoPersonajes.h"
+#include "DisenoPersonajes.h" 
 using namespace System;
 
 namespace Nivel1 {
@@ -15,7 +15,7 @@ namespace Nivel1 {
         gestor.limpiarEntidades();
 
         int cantidadArboles = 6;
-        for (int i = 0; i < cantidadArboles; i++) {
+        for (int i = 0; i < cantidadArboles; i += 1) {
             int x = generadorAleatorio->Next(LIMITE_IZQUIERDO + 1, LIMITE_DERECHO - 1);
             int y = generadorAleatorio->Next(LIMITE_SUPERIOR + 1, LIMITE_INFERIOR - 1);
             gestor.agregarEntidad(new Arbol(x, y));
